@@ -14,25 +14,24 @@ RUN curl -L -o /tmp/NVIDIA.run \
 RUN /tmp/NVIDIA.run --extract-only --target /tmp/nvidia-driver \
     && rm /tmp/NVIDIA.run
 
-# 3) Качаем патч и распаковываем поверх с заменой файлов
+# 3) Качаем патч и распаковываем поверх
 RUN curl -L -o /tmp/nvidia-patch.zip \
     "https://github.com/dartraiden/NVIDIA-patcher/releases/download/${NVIDIA_VERSION}/NVIDIA-Linux-x86_64-${NVIDIA_VERSION}.zip" \
-    && dnf install -y unzip \
     && unzip -o /tmp/nvidia-patch.zip -d /tmp/nvidia-driver \
     && rm /tmp/nvidia-patch.zip
 
-# 4) Удаляем старый драйвер
-RUN dnf remove -y \
-    xorg-x11-drv-nvidia \
-    xorg-x11-drv-nvidia-libs \
-    xorg-x11-drv-nvidia-cuda \
-    akmod-nvidia \
+# 4) Удаляем старые файлы драйвера напрямую
+RUN rm -f /usr/lib64/libnvidia*.so* \
+    /usr/lib64/libGL.so* \
+    /usr/lib64/libEGL.so* \
     || true
 
-# 5) Устанавливаем патченный драйвер
+# 5) Устанавливаем патченный драйвер принудительно
 RUN /tmp/nvidia-driver/nvidia-installer \
     --silent \
     --no-kernel-module \
     --no-nouveau-check \
     --no-backup \
+    --force \
+    --ui=none \
     && rm -rf /tmp/nvidia-driver
