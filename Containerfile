@@ -5,33 +5,28 @@ LABEL org.opencontainers.image.source="https://github.com/cryoserenity-design/ba
 
 ARG NVIDIA_VERSION=580.159.04
 
-# 1) Качаем оригинальный драйвер с NVIDIA
 RUN curl -L -o /tmp/NVIDIA.run \
     "https://download.nvidia.com/XFree86/Linux-x86_64/${NVIDIA_VERSION}/NVIDIA-Linux-x86_64-${NVIDIA_VERSION}.run" \
     && chmod +x /tmp/NVIDIA.run
 
-# 2) Распаковываем без установки
 RUN /tmp/NVIDIA.run --extract-only --target /tmp/nvidia-driver \
     && rm /tmp/NVIDIA.run
 
-# 3) Качаем патч и распаковываем поверх
 RUN curl -L -o /tmp/nvidia-patch.zip \
     "https://github.com/dartraiden/NVIDIA-patcher/releases/download/${NVIDIA_VERSION}/NVIDIA-Linux-x86_64-${NVIDIA_VERSION}.zip" \
     && unzip -o /tmp/nvidia-patch.zip -d /tmp/nvidia-driver \
     && rm /tmp/nvidia-patch.zip
 
-# 4) Удаляем старые файлы драйвера напрямую
 RUN rm -f /usr/lib64/libnvidia*.so* \
     /usr/lib64/libGL.so* \
     /usr/lib64/libEGL.so* \
     || true
 
-# 5) Устанавливаем патченный драйвер принудительно
 RUN /tmp/nvidia-driver/nvidia-installer \
     --silent \
     --no-kernel-module \
     --no-nouveau-check \
     --no-backup \
-    --force \
+    --override-file-type-destination=NVIDIA_LOG:/var/log/nvidia-installer.log \
     --ui=none \
     && rm -rf /tmp/nvidia-driver
