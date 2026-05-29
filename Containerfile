@@ -27,6 +27,6 @@ RUN /tmp/nvidia-driver/nvidia-installer \
     --no-kernel-module \
     --no-nouveau-check \
     --no-backup \
-    --override-file-type-destination=NVIDIA_LOG:/var/log/nvidia-installer.log \
+    --no-check-for-alternate-installs \
     --ui=none \
     && rm -rf /tmp/nvidia-driver
